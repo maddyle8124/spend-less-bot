@@ -6,7 +6,7 @@ A personal finance Telegram bot that hooks into your bank via SePay, asks you to
 
 ## Demo
 
-[![Watch the demo](https://img.youtube.com/vi/4e6c7c4HcbM/0.jpg)](https://youtube.com/shorts/4e6c7c4HcbM)
+[![Watch the demo](https://youtube.com/shorts/uw31SR4ba8A?feature=share)
 ```
 Bank transaction happens
   → SePay notifies the bot
