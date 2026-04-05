@@ -2,6 +2,11 @@
 
 A personal finance Telegram bot that hooks into your bank via SePay, asks you to categorize each transaction, and tracks your budget in Google Sheets — with daily recaps, weekly summaries, and monthly reports.
 
+---
+
+## Demo
+
+[![Watch the demo](https://img.youtube.com/vi/P2rWncHGYtc/0.jpg)](https://youtube.com/shorts/P2rWncHGYtc)
 ```
 Bank transaction happens
   → SePay notifies the bot
