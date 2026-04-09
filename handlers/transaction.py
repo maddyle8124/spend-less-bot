@@ -8,11 +8,27 @@ import sheets as sh
 import telegram_api as tg
 
 _LARGE_TX = 100_000  # alert threshold in VND
+_MAX_ROW   = 100_000  # sanity cap — no real sheet will have 100k rows
+
+
+def _parse_row_num(parts: list[str], min_parts: int = 2) -> int | None:
+    """Return validated row number from callback parts, or None if invalid."""
+    if len(parts) < min_parts:
+        return None
+    raw = parts[1]
+    if not raw.isdigit():
+        return None
+    n = int(raw)
+    if n < 2 or n > _MAX_ROW:   # row 1 is the header
+        return None
+    return n
 
 
 async def handle_parent_selected(parts: list[str], message_id: int):
     # callback_data: p_{rowNum}_{bucketId}
-    row_num   = int(parts[1])
+    row_num = _parse_row_num(parts, min_parts=3)
+    if row_num is None:
+        return
     bucket_id = "_".join(parts[2:])
 
     sh.finalize_transaction(row_num, bucket_id, "")
@@ -42,7 +58,9 @@ async def handle_parent_selected(parts: list[str], message_id: int):
 
 async def handle_sub_selected(parts: list[str], message_id: int):
     # callback_data: s_{rowNum}_{subKey}
-    row_num = int(parts[1])
+    row_num = _parse_row_num(parts, min_parts=3)
+    if row_num is None:
+        return
     sub_key = "_".join(parts[2:])
     state   = sh.get_state(CHAT_ID)
     parent  = (state or {}).get("parent_category") or sh.get_parent_from_sheet(row_num)
@@ -65,7 +83,9 @@ async def handle_freetext_sub(text: str, state: dict):
 
 async def handle_recategorize(parts: list[str], message_id: int):
     """User tapped 'Wrong category?' — reset the row and re-show the bucket picker."""
-    row_num = int(parts[1])
+    row_num = _parse_row_num(parts, min_parts=2)
+    if row_num is None:
+        return
     row = sh.get_transaction_row(row_num)
     amount = sh._parse_amount(row[7]) if len(row) > 7 else 0
     description = row[5] if len(row) > 5 else ""
