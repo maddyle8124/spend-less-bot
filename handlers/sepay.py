@@ -12,10 +12,6 @@ import telegram_api as tg
 
 
 async def handle_sepay_webhook(payload: dict):
-    # DEBUG: log raw payload to help diagnose field names
-    import json
-    print("DEBUG sepay raw payload:", json.dumps(payload, ensure_ascii=False))
-
     data = payload.get("data") if "data" in payload else payload
 
     # Try all known SePay field names for amount
@@ -33,7 +29,6 @@ async def handle_sepay_webhook(payload: dict):
     is_outgoing = "out" in tx_type or "debit" in tx_type or float(raw_amount) < 0
     if not is_outgoing and float(raw_amount) >= 0:
         # Incoming transfer — skip
-        print(f"DEBUG: skipping incoming tx, type={tx_type!r}, amount={raw_amount}")
         return
 
     description = (data.get("description") or data.get("content") or "Không có mô tả").strip()
@@ -41,7 +36,6 @@ async def handle_sepay_webhook(payload: dict):
 
     # Idempotency: skip duplicate webhook deliveries from SePay
     if sh.tx_exists(ref_code):
-        print(f"DEBUG: duplicate webhook ignored, ref_code={ref_code!r}")
         return
 
     tz = pytz.timezone(TIMEZONE)

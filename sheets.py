@@ -176,7 +176,6 @@ def get_daily_status(tx_date: datetime) -> dict:
             continue
         r_str = str(r[1])
         if date_str_1 in r_str or date_str_2 in r_str or date_str_3 in r_str:
-            print(f"DEBUG daily row: r[1]={r[1]!r} r[7]={r[7]!r} r[10]={r[10]!r} r[13]={r[13]!r} full={r}")
             spent += _parse_amount(r[7])
     
     remaining = cap - spent
@@ -295,7 +294,6 @@ def append_transaction(tx_date, description, amount, ref_code, month_key) -> int
         month_key,    # O: Month
     ]
     ws.update(f"A{next_row}:O{next_row}", [row_data])
-    print(f"DEBUG append_transaction: wrote row {next_row}, amount={amount}")
     return next_row
 
 
@@ -333,7 +331,6 @@ def write_budget_row(month_key: str, bucket: dict):
                 bucket.get("daily_cap") or "",
                 "TRUE",
             ]])
-            print(f"DEBUG write_budget_row: updated row {row_num} bucket={bucket['id']} allocated={bucket.get('allocated')}")
             return
     # Row doesn't exist — append
     next_row = _next_row(ws, col=1)
@@ -347,7 +344,6 @@ def write_budget_row(month_key: str, bucket: dict):
         "telegram",
         "",
     ]])
-    print(f"DEBUG write_budget_row: appended row {next_row} bucket={bucket['id']} allocated={bucket.get('allocated')}")
 
 
 # ─── Bot State ─────────────────────────────────────────────────
