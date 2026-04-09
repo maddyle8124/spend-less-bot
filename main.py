@@ -93,9 +93,11 @@ async def _process(body: dict):
 async def _handle_callback(cb: dict):
     await tg.answer_callback(cb["id"])
     data       = cb.get("data") or ""
-    message_id = cb["message"]["message_id"]
-    parts      = data.split("_")
-    prefix     = parts[0]
+    message_id = (cb.get("message") or {}).get("message_id")
+    if not message_id:
+        return  # inline-mode or channel callbacks have no message — ignore
+    parts  = data.split("_")
+    prefix = parts[0]
 
     if prefix == "p":
         await handle_parent_selected(parts, message_id)
