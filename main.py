@@ -5,8 +5,24 @@ Receives SePay webhooks and Telegram updates via a single /webhook endpoint.
 from fastapi import FastAPI, Request, BackgroundTasks
 from fastapi.responses import JSONResponse
 import asyncio
+import os
+import secrets
 
 from config import CHAT_ID
+
+# Secret token protecting the /trigger/* cron endpoints.
+# Set TRIGGER_SECRET in your .env to a long random string, e.g.:
+#   python -c "import secrets; print(secrets.token_hex(32))"
+_TRIGGER_SECRET = os.environ.get("TRIGGER_SECRET", "")
+
+
+def _check_trigger_secret(request: Request) -> bool:
+    """Return True only when the caller supplies the correct secret token."""
+    if not _TRIGGER_SECRET:
+        # No secret configured — block all trigger calls to fail safe.
+        return False
+    provided = request.headers.get("X-Trigger-Secret", "")
+    return secrets.compare_digest(provided, _TRIGGER_SECRET)
 import sheets as sh
 import telegram_api as tg
 from handlers.sepay       import handle_sepay_webhook
@@ -42,26 +58,37 @@ async def webhook(request: Request, bg: BackgroundTasks):
 
 
 # ─── Scheduled triggers (call via cron on VPS) ───────────────
+# All trigger endpoints require the X-Trigger-Secret header.
+# Update your crontab to pass the secret, e.g.:
+#   curl -s -X POST -H "X-Trigger-Secret: $TRIGGER_SECRET" http://localhost:8000/trigger/daily-recap
 @app.post("/trigger/weekly")
-async def trigger_weekly():
+async def trigger_weekly(request: Request):
+    if not _check_trigger_secret(request):
+        return JSONResponse({"ok": False}, status_code=403)
     asyncio.create_task(run_weekly_summary())
     return {"ok": True}
 
 
 @app.post("/trigger/monthly-report")
-async def trigger_monthly_report():
+async def trigger_monthly_report(request: Request):
+    if not _check_trigger_secret(request):
+        return JSONResponse({"ok": False}, status_code=403)
     asyncio.create_task(run_monthly_report())
     return {"ok": True}
 
 
 @app.post("/trigger/monthly-allocation")
-async def trigger_monthly_allocation():
+async def trigger_monthly_allocation(request: Request):
+    if not _check_trigger_secret(request):
+        return JSONResponse({"ok": False}, status_code=403)
     asyncio.create_task(start_monthly_allocation())
     return {"ok": True}
 
 
 @app.post("/trigger/daily-recap")
-async def trigger_daily_recap():
+async def trigger_daily_recap(request: Request):
+    if not _check_trigger_secret(request):
+        return JSONResponse({"ok": False}, status_code=403)
     asyncio.create_task(send_daily_recap())
     return {"ok": True}
 
