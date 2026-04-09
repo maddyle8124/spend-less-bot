@@ -91,6 +91,13 @@ async def _process(body: dict):
 
 
 async def _handle_callback(cb: dict):
+    # Reject callbacks from anyone other than the authorised owner.
+    # Without this check any Telegram user who finds the bot can tap its
+    # inline buttons and mutate transactions in the sheet.
+    if str(cb.get("from", {}).get("id")) != str(CHAT_ID):
+        await tg.answer_callback(cb["id"])   # acknowledge so Telegram stops spinning
+        return
+
     await tg.answer_callback(cb["id"])
     data       = cb.get("data") or ""
     message_id = cb["message"]["message_id"]
