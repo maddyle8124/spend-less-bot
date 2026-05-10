@@ -66,7 +66,7 @@ Your spreadsheet needs these tabs (exact names matter):
 
 **Transactions sheet columns (A→R):**
 
-`ID · Date · · · · Description · Type · Amount · RefCode · Running total · Category · Sub-category · IsDaily · Confirmed · Month · Notes · Occasion · Direction`
+`ID · Date · · · · Description · Type · Amount · RefCode · Running total · Category · Sub-category · IsDaily · Confirmed · Month · Direction`
 
 **Budget Config columns (A→H):**
 
@@ -172,7 +172,7 @@ In SePay dashboard → Webhook → set URL to `https://yourdomain.com/webhook`
 | `/weekly` | Weekly spending summary |
 | `/report` | Full monthly breakdown |
 | `/audit` | Find uncategorized transactions |
-| `/log <amount> <description>` | Log a transaction manually |
+| `/log <amount>` | Log a transaction manually |
 
 ---
 
